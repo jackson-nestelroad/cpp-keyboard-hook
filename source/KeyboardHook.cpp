@@ -33,20 +33,26 @@ LRESULT CALLBACK KeyboardHook::HookCallback(int nCode, WPARAM wParam, LPARAM lPa
    // This structure contains the data we received from callback
    KBDLLHOOKSTRUCT *pkbhs = (KBDLLHOOKSTRUCT*) lParam;
 
-   // Handle the key according to its code
-   // We can intercept the message here if we want
-   if (!(MessageHandler::handleKey(pkbhs->vkCode)))
-      return 1;
-
    // Check the message is from the keyboard or is synthesized by SendInput API
-   if ((pkbhs->flags & LLKHF_INJECTED))
-      return ::CallNextHookEx(m_hHook, nCode, wParam, lParam);
+  /* if ((pkbhs->flags & LLKHF_INJECTED))
+      return ::CallNextHookEx(m_hHook, nCode, wParam, lParam);*/
 
-   // Post private messages to main function
-   // wParam specifies the virtual key code
-   // lParam specifies the scan code
+   // Only send keydown actions
    if (wParam == WM_KEYDOWN)
-      ::PostMessage(m_hWnd, WM_KEYINPUT, pkbhs->vkCode, pkbhs->scanCode);
+   {
+      // Handle the key according to its code
+      // We can intercept the message here if we want
+      switch (MessageHandler::handleKey(pkbhs->vkCode))
+      {
+         case PASS_KEY: return ::CallNextHookEx(m_hHook, nCode, wParam, lParam); break;
+         case KILL_KEY: ::PostMessage(m_hWnd, WM_KEYINPUT, -1, -1);
+         case EAT_KEY: return 1; break;
+      }
+      // Post private messages to main function
+      // wParam specifies the virtual key code
+      // lParam specifies the scan code
+      // ::PostMessage(m_hWnd, WM_KEYINPUT, pkbhs->vkCode, pkbhs->scanCode);
+   }
 
    // Call the next hook in the hook chain
    return ::CallNextHookEx(m_hHook, nCode, wParam, lParam);

